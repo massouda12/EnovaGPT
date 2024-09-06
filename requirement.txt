@@ -1,4 +1,4 @@
-
+langchain_pinecone==0.0.3
 streamlit
 langchain
 transformers
@@ -11,3 +11,4 @@ langchain-community
 langchain-huggingface
 selenium
 beautifulsoup4
+langchain-groq
