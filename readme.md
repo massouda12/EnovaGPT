@@ -64,7 +64,7 @@ Installez les dépendances à partir du fichier `requirement.txt` :
 
 Le modèle utilisé dans ce projet est le [Mistral-7B-Instruct v0.1 GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/blob/main/mistral-7b-instruct-v0.1.Q5_K_M.gguf).
 
-Le modéle utilisé pour le Chatbot est le [Meta-Llama-3-8B-Instruct] (https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) .
+Le modéle utilisé pour le Chatbot est le [Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) .
 ## 📬Contact
 Pour toute question, veuillez contacter  à [chattichiheb35@gmail.com] et [saifmassouda@gmail.com].
 
