@@ -40,6 +40,14 @@ Ce projet vise à développer un modèle de langage large (LLM) capable de gén�
   <img src="https://github.com/user-attachments/assets/5a85a318-1296-4e2b-a6cd-13979679acd2" alt="Interface 6" width="600">
 </div>
 
+- **chat Model** pour discuter avec le model et ajouter des données avec le téléchargement de PDF.
+> ***Interface :*** 
+<div align="center">
+<img src ="https://github.com/user-attachments/assets/8fe7a475-c376-4f3b-b6eb-8517f7308ed4" alt="Interface 5" width="600">
+<img src ="https://github.com/user-attachments/assets/cffe61a9-3705-4bb7-8c60-530928981d0e" alt="Interface 6" width="700">
+
+</div>
+
 ## 🎥 Video Démo
 
 https://github.com/user-attachments/assets/c81b2c3e-bc6d-4815-bbb0-65e1ccf37ffd
