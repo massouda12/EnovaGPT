@@ -322,18 +322,19 @@ def main():
 
         st.button("Upload PDF", on_click=toggle_uploader)
 
-        if st.session_state.get('show_uploader', True):
+        if st.session_state.get('show_uploader', False):
             uploaded_file = st.file_uploader("Upload a PDF file", type="pdf", key="uploader", help="Upload a PDF file here")
 
             if uploaded_file is not None:
                 st.write(f"Uploaded file: {uploaded_file.name}")
                 if uploaded_file.name.lower().endswith('.pdf'):
                     # Process the PDF file
-                    docsearch, llm_groq, vectorstore, embeddings, index_name = initialize_services()
-                    extract_pdf(uploaded_file, vectorstore, index_name=index_name, embeddings=embeddings, PINECONE_API_KEY=os.environ.get('PINECONE_API_KEY'))
-                    csv_file_path = CSV(uploaded_file)
-                    extract_cv(csv_file_path, vectorstore)
-                    st.write("PDF file processed and indexed.")
+                    with st.spinner("Processing PDF..."):
+                        docsearch, llm_groq, vectorstore, embeddings, index_name = initialize_services()
+                        extract_pdf(uploaded_file, vectorstore, index_name=index_name, embeddings=embeddings, PINECONE_API_KEY=os.environ.get('PINECONE_API_KEY'))
+                        csv_file_path = CSV(uploaded_file)
+                        extract_cv(csv_file_path, vectorstore)
+                    st.success("PDF file processed and indexed.")
                 else:
                     st.warning("Please upload a PDF file.")
 
