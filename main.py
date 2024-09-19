@@ -14,11 +14,15 @@ from database import create_tables, insert_generation_post, insert_analyze_cv, i
 import sqlite3
 from dotenv import load_dotenv
 import asyncio
-from fonction.Chatmodel import chat
-from fonction.Chatmodel import extract_pdf
-from fonction.Chatmodel import extract_cv
-from fonction.Chatmodel import initialize_services
-from fonction.Chatmodel import CSV
+from fonction.CVmodel import chat
+from fonction.CVmodel import extract_pdf
+from fonction.CVmodel import extract_cv
+from fonction.CVmodel import initialize_services
+from fonction.CVmodel import CSV
+from fonction.Rapportmodel import initialize_services2
+from fonction.Rapportmodel import process_pdf
+from fonction.Rapportmodel import Rapportchat
+
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv()
 
@@ -98,8 +102,8 @@ def main():
 
     action = option_menu(
         None,
-        ["Recruitment Post", "Analyze CVs", "Profile LinkedIn", "Results","Historical","Chat Model"],
-        icons=["bi bi-pencil-square", "file-earmark-text", "bi bi-linkedin", "bi bi-check-circle", "bi bi-clock-history","bi bi-robot"],
+        ["Recruitment Post", "Analyze CVs", "Profile LinkedIn", "Results","Historical","CV Chat Model","Rapport Chat Model"],
+        icons=["bi bi-pencil-square", "file-earmark-text", "bi bi-linkedin", "bi bi-check-circle", "bi bi-clock-history","bi bi-robot","bi bi-book"],
         default_index=0,
         orientation="horizontal"
     )
@@ -314,11 +318,11 @@ def main():
                 
                 st.markdown('<p class="subheader-center2"> 🔗  LinkedIn Profiles  🔗 </p>', unsafe_allow_html=True)
                 st.dataframe(profiles_df)
-    elif action == "Chat Model":
+    elif action == "CV Chat Model":
         def toggle_uploader():
             st.session_state.show_uploader = not st.session_state.get('show_uploader', True)
 
-        st.markdown('<p class="subheader-center">Chat Model 💬</p>', unsafe_allow_html=True)
+        st.markdown('<p class="subheader-center">CV Chat Model 💬</p>', unsafe_allow_html=True)
 
         st.button("Upload PDF", on_click=toggle_uploader)
 
@@ -348,6 +352,40 @@ def main():
                     st.text_area("Model's Response:", response, height=100)
                 else:
                     st.warning("Please enter a question.")
-            
+
+    elif action == "Rapport Chat Model" :
+        def toggle_uploader():
+            st.session_state.show_uploader = not st.session_state.get('show_uploader', True)
+
+        st.markdown('<p class="subheader-center">Rapport Chat Model 💬</p>', unsafe_allow_html=True)
+
+        st.button("Upload PDF", on_click=toggle_uploader)
+
+        if st.session_state.get('show_uploader', False):
+            uploaded_file = st.file_uploader("Upload a PDF file", type="pdf", key="uploader", help="Upload a PDF file here")
+
+            if uploaded_file is not None:
+                st.write(f"Uploaded file: {uploaded_file.name}")
+                if uploaded_file.name.lower().endswith('.pdf'):
+                    # Process the PDF file
+                    with st.spinner("Processing PDF..."):
+                        docsearch, llm_groq, vectorstore, embeddings, index_name = initialize_services2()
+                        process_pdf(uploaded_file, vectorstore, index_name=index_name, embeddings=embeddings, PINECONE_API_KEY=os.environ.get('PINECONE_API_KEY'))
+                    st.success("PDF file processed and indexed.")
+                else:
+                    st.warning("Please upload a PDF file.")
+
+        with st.form(key='chat_form'):
+
+            user_question = st.text_input("Ask a question:")
+
+            if st.form_submit_button(label='Submit'):
+                if user_question:
+                    response = asyncio.run(Rapportchat(user_question))
+                    st.text_area("Model's Response:", response, height=100)
+                else:
+                    st.warning("Please enter a question.")
+
+ 
 if __name__ == "__main__":
     main()

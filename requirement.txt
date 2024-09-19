@@ -12,3 +12,4 @@ langchain-huggingface
 selenium
 beautifulsoup4
 langchain-groq
+pdfplumber
