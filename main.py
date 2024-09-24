@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import fitz  
 from io import BytesIO
+from langchain_groq import ChatGroq
+
 from langchain_community.llms import LlamaCpp, HuggingFaceHub
 from fonction.create_database import main as update_database
 from fonction.embedding_function import get_embedding_function
@@ -31,17 +33,15 @@ MODEL_PATH = os.getenv('MODEL_PATH')
 DATA_PATH = os.getenv('DATA_PATH')
 HUGGINGFACEHUB_API_TOKEN = os.getenv('HUGGINGFACEHUB_API_TOKEN')
 DATABASE_PATH = os.getenv('DATABASE_PATH')
-
+PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 # Function to initialize the LlamaCpp model
 @st.cache_resource
 def initialize_llm():
-    return LlamaCpp(
-        streaming=False,
-        model_path=MODEL_PATH,
-        temperature=0.75,
-        top_p=0.9,
-        verbose=True,
-        n_ctx=4096,
+    return ChatGroq(
+        groq_api_key=GROQ_API_KEY,
+        model_name='mixtral-8x7b-32768',
+        temperature=0.1,
     )
 
 # Function to initialize the HuggingFaceHub model
@@ -130,7 +130,7 @@ def main():
                 if job_title and type_contrat and (salaire or duree_stage):
                     st.session_state['job_title'] = job_title  
                     with st.spinner('Generating the recruitment post...'):
-                        recruitment_post = generate_recruitment_post(llm2, job_title, type_contrat, salaire, duree_stage)
+                        recruitment_post = generate_recruitment_post(llm, job_title, type_contrat, salaire, duree_stage)
                         st.session_state['type_contrat'] = type_contrat
                         if type_contrat == "Internship":
                             st.session_state['duree_stage'] = duree_stage
@@ -182,7 +182,7 @@ def main():
             if submit_button:
                 if  poste:
                     with st.spinner('Searching compatible profiles...'):
-                        results, response_text = query_profiles(poste, embedding_function, llm2)
+                        results, response_text = query_profiles(poste, embedding_function, llm)
                         st.session_state['cv_results'] = results
                         st.session_state['cv_response_text'] = response_text
                         # Insérer les résultats dans la base de données
@@ -335,7 +335,7 @@ def main():
                     # Process the PDF file
                     with st.spinner("Processing PDF..."):
                         docsearch, llm_groq, vectorstore, embeddings, index_name = initialize_services()
-                        extract_pdf(uploaded_file, vectorstore, index_name=index_name, embeddings=embeddings, PINECONE_API_KEY=os.environ.get('PINECONE_API_KEY'))
+                        extract_pdf(uploaded_file, vectorstore, index_name=index_name, embeddings=embeddings, PINECONE_API_KEY=PINECONE_API_KEY)
                         csv_file_path = CSV(uploaded_file)
                         extract_cv(csv_file_path, vectorstore)
                     st.success("PDF file processed and indexed.")
@@ -370,7 +370,7 @@ def main():
                     # Process the PDF file
                     with st.spinner("Processing PDF..."):
                         docsearch, llm_groq, vectorstore, embeddings, index_name = initialize_services2()
-                        process_pdf(uploaded_file, vectorstore, index_name=index_name, embeddings=embeddings, PINECONE_API_KEY=os.environ.get('PINECONE_API_KEY'))
+                        process_pdf(uploaded_file, vectorstore, index_name=index_name, embeddings=embeddings, PINECONE_API_KEY=PINECONE_API_KEY)
                     st.success("PDF file processed and indexed.")
                 else:
                     st.warning("Please upload a PDF file.")

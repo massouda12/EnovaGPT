@@ -2,6 +2,7 @@
 import os
 from langchain_community.vectorstores import Chroma
 from langchain.schema import Document
+from langchain_pinecone import PineconeVectorStore
 
 CHROMA_PATH = "C:/Users/chatt/Desktop/Nouveau dossier/Stage enova/chroma"
 DATA_PATH = "C:/Users/chatt/Desktop/Nouveau dossier/Stage enova/Data"
@@ -33,7 +34,9 @@ Resume Content:
 Extracted Details:
 """
 def query_profiles(post_description: str, embedding_function, llm):
-    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
+    PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
+    db = PineconeVectorStore(index_name="enova", embedding=embedding_function, pinecone_api_key=PINECONE_API_KEY)
+
     # Rechercher les chunks similaires
     results = db.similarity_search_with_score(post_description)
 

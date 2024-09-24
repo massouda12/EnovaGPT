@@ -14,6 +14,9 @@ import csv
 from langchain_community.document_loaders import CSVLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
+from pinecone.grpc import PineconeGRPC as Pinecone
+from pinecone import ServerlessSpec
+
 import pdfplumber
 
 
@@ -21,7 +24,18 @@ def initialize_services2():
     PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
     index_name = "rapport"
-
+    pc = Pinecone(api_key="0f58e1ef-5679-498e-8b8f-e35fca0ab553")
+    pc.create_index(
+    name=index_name,
+    dimension=384,
+    metric="cosine",
+    spec=ServerlessSpec(
+        cloud="aws",
+        region="us-east-1"
+    ),
+    deletion_protection="disabled"
+    
+    )
     embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
     docsearch = PineconeVectorStore(index_name=index_name, embedding=embeddings, pinecone_api_key=PINECONE_API_KEY)
     vectorstore = PineconeVectorStore(
@@ -73,7 +87,7 @@ async def get_trimmed_response(chain, question):
 
 # Main function to run the query and get the response
 async def Rapportchat(user_question):
-    docsearch, llm_groq,vectorstore ,embeddings,index_name = initialize_services()
+    docsearch, llm_groq,vectorstore ,embeddings,index_name = initialize_services2()
     retrieval_augmented_generation_chain = setup_rag_chain(docsearch, llm_groq)
     response_dict = await retrieval_augmented_generation_chain.ainvoke({"question": user_question})
     return extract_answer(response_dict)

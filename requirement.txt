@@ -13,3 +13,4 @@ selenium
 beautifulsoup4
 langchain-groq
 pdfplumber
+pinecone-client[grpc]

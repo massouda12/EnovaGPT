@@ -6,6 +6,10 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 from fonction.embedding_function import get_embedding_function
 from langchain_community.vectorstores import Chroma
+from langchain_pinecone import PineconeVectorStore
+from pinecone.grpc import PineconeGRPC as Pinecone
+from pinecone import ServerlessSpec
+
 CHROMA_PATH = "c:/Users/chatt/Desktop/Nouveau dossier/Stage enova/chroma"
 DATA_PATH = "C:/Users/chatt/Desktop/Nouveau dossier/Stage enova/Data"
 
@@ -34,16 +38,29 @@ def split_documents(documents: List[Document]):
 def add_to_chroma(chunks: List[Document]):
         # Obtenir la fonction d'embedding à utiliser pour la vectorisation.
     embedding_function = get_embedding_function()
+    PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
     
         # Initialiser le stockage vectoriel Chroma.
-
-    db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=embedding_function
+    pc = Pinecone(api_key=PINECONE_API_KEY)
+    pc.create_index(
+    name="enova",
+    dimension=384,
+    metric="cosine",
+    spec=ServerlessSpec(
+        cloud="aws",
+        region="us-east-1"
+    ),
+    deletion_protection="disabled"
+    )
+    vectorstore = PineconeVectorStore(
+    pinecone_api_key = PINECONE_API_KEY,
+    embedding=embedding_function,
+    index_name='enova'
     )
     
     # Attribuer des identifiants uniques aux fragments et vérifier les doublons dans la base de données.
     chunks_with_ids = calculate_chunk_ids(chunks)
-    existing_items = db.get(include=[])
+    existing_items = vectorstore.get(include=[])
     existing_ids = set(existing_items["ids"])
     print(f"Number of existing documents in DB: {len(existing_ids)}")
     # Filtrer les fragments déjà présents dans la base de données.
@@ -57,12 +74,12 @@ def add_to_chroma(chunks: List[Document]):
     if len(new_chunks):
         print(f"👉 Adding new documents: {len(new_chunks)}")
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
-        db.add_texts(
+        vectorstore.add_texts(
             texts=[chunk.page_content for chunk in new_chunks],
             metadatas=[chunk.metadata for chunk in new_chunks],
             ids=new_chunk_ids
         )
-        db.persist()
+        vectorstore.persist()
     else:
         print("✅ No new documents to add")
 
@@ -88,8 +105,9 @@ def calculate_chunk_ids(chunks: List[Document]):
     return chunks
 
 def clear_database():
-    if os.path.exists(CHROMA_PATH):
-        shutil.rmtree(CHROMA_PATH)
+    PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
+    pc = Pinecone(api_key=PINECONE_API_KEY)
+    pc.delete_index("enova")
 
 if __name__ == "__main__":
     main()
