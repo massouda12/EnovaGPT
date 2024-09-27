@@ -24,7 +24,7 @@ from fonction.CVmodel import CSV
 from fonction.Rapportmodel import initialize_services2
 from fonction.Rapportmodel import process_pdf
 from fonction.Rapportmodel import Rapportchat
-
+import re
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv()
 
@@ -130,13 +130,28 @@ def main():
                 if job_title and type_contrat and (salaire or duree_stage):
                     st.session_state['job_title'] = job_title  
                     with st.spinner('Generating the recruitment post...'):
+                        def extract_content(response):
+                            # Check if the response is a dictionary and contains 'content'
+                            if isinstance(response, dict) and 'content' in response:
+                                # Strip newlines and extra spaces within 'content'
+                                cleaned_content = response['content'].replace("\n", " ").strip()
+                                return cleaned_content
+                            elif isinstance(response, str):
+                                # Remove 'response_metadata' and 'id' sections
+                                cleaned_response = re.sub(r"response_metadata={.*?}|\bid='.*?'", "", response, flags=re.DOTALL)
+                                cleaned_response = re.sub(r", 'model_name':.*?\}", "", cleaned_response, flags=re.DOTALL)
+                                return cleaned_response.strip()  # Return the cleaned string without metadata
+                            else:
+                                return "Content not found."
+                        
                         recruitment_post = generate_recruitment_post(llm, job_title, type_contrat, salaire, duree_stage)
+                        content_1 = extract_content(recruitment_post)
                         st.session_state['type_contrat'] = type_contrat
                         if type_contrat == "Internship":
                             st.session_state['duree_stage'] = duree_stage
                         else:
                             st.session_state['salaire'] = salaire
-                        st.session_state['recruitment_post'] = recruitment_post
+                        st.session_state['recruitment_post'] = content_1
                         insert_generation_post(job_title, type_contrat, salaire, duree_stage, recruitment_post)
                     st.success("Recruitment post generated successfully!")
                 else:

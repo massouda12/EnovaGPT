@@ -5,7 +5,7 @@ from langchain.schema import Document
 from langchain_pinecone import PineconeVectorStore
 
 CHROMA_PATH = "C:/Users/chatt/Desktop/Nouveau dossier/Stage enova/chroma"
-DATA_PATH = "C:/Users/chatt/Desktop/Nouveau dossier/Stage enova/Data"
+DATA_PATH = "C:/Users/DELL/Documents/GitHub/EnovaGPT/data"
 
 # Templates for LLM prompts
 PROMPT_TEMPLATE = """
