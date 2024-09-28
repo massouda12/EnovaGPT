@@ -134,7 +134,7 @@ def main():
                             # Check if the response is a dictionary and contains 'content'
                             if isinstance(response, dict) and 'content' in response:
                                 # Strip newlines and extra spaces within 'content'
-                                cleaned_content = response['content'].replace("\n", " ").strip()
+                                cleaned_content = response['content'].replace("\n", "  ").strip()
                                 return cleaned_content
                             elif isinstance(response, str):
                                 # Remove 'response_metadata' and 'id' sections
@@ -203,7 +203,7 @@ def main():
                             # Check if the response is a dictionary and contains 'content'
                             if isinstance(response, dict) and 'content' in response:
                                 # Strip newlines and extra spaces within 'content'
-                                cleaned_content = response['content'].replace("\n", " ").strip()
+                                cleaned_content = response['content'].replace("\n", "  ").strip()
                                 return cleaned_content
                             elif isinstance(response, str):
                                 # Remove 'response_metadata' and 'id' sections
