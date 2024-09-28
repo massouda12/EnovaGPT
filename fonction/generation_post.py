@@ -7,12 +7,12 @@ def generate_recruitment_post(llm, poste, type_contrat, salaire=None, duree_stag
     # Description de la tâche pour générer la liste de compétences
     competences_template = PromptTemplate(
         input_variables=["poste"],
-        template="Votre tâche est de lister les compétences nécessaires pour un {poste} ayant de l'expérience. \n\nListe de compétences requises :"
+        template="Votre tâche est de lister les compétences nécessaires pour un {poste} ayant de l'expérience. \n Liste de compétences requises :"
     )
     # Description de la tâche pour générer la liste des avantages
     avantages_template = PromptTemplate(
         input_variables=["type_contrat", "poste"],
-        template="Votre tâche est de lister les avantages offerts pour un {type_contrat} comme {poste}. \n\nAvantages offerts :"
+        template="Votre tâche est de lister les avantages offerts pour un {type_contrat} comme {poste}. \n Avantages offerts :"
     )
 
     # Crée les chaînes de génération des compétences et avantages
@@ -32,7 +32,7 @@ def generate_recruitment_post(llm, poste, type_contrat, salaire=None, duree_stag
             f"📝 Contract Type: {type_contrat}\n"
             f"⏳ Duration: {duree_stage}\n"
             f"🛠️ Key Skills: {competences}\n"
-            f"🎉 Benefits: {avantages}\n\n"
+            f"🎉 Benefits: {avantages}\n"
             f"🔗 Apply here: stages@enovarobotics.com\n"
             f"Don't miss this chance to be part of our innovative and dynamic family! 🌟"
         )

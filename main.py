@@ -140,12 +140,14 @@ def main():
                                 # Remove 'response_metadata' and 'id' sections
                                 cleaned_response = re.sub(r"response_metadata={.*?}|\bid='.*?'", "", response, flags=re.DOTALL)
                                 cleaned_response = re.sub(r", 'model_name':.*?\}", "", cleaned_response, flags=re.DOTALL)
+                                cleaned_response = re.sub(r'\bcontent\b', '', cleaned_response, flags=re.IGNORECASE)
                                 return cleaned_response.strip()  # Return the cleaned string without metadata
                             else:
                                 return "Content not found."
                         
                         recruitment_post = generate_recruitment_post(llm, job_title, type_contrat, salaire, duree_stage)
                         content_1 = extract_content(recruitment_post)
+                        #content_1 = clean_content(content_1)
                         st.session_state['type_contrat'] = type_contrat
                         if type_contrat == "Internship":
                             st.session_state['duree_stage'] = duree_stage
@@ -197,10 +199,28 @@ def main():
             if submit_button:
                 if  poste:
                     with st.spinner('Searching compatible profiles...'):
+                        def extract_content(response):
+                            # Check if the response is a dictionary and contains 'content'
+                            if isinstance(response, dict) and 'content' in response:
+                                # Strip newlines and extra spaces within 'content'
+                                cleaned_content = response['content'].replace("\n", " ").strip()
+                                return cleaned_content
+                            elif isinstance(response, str):
+                                # Remove 'response_metadata' and 'id' sections
+                                cleaned_response = re.sub(r"response_metadata={.*?}|\bid='.*?'", "", response, flags=re.DOTALL)
+                                cleaned_response = re.sub(r", 'model_name':.*?\}", "", cleaned_response, flags=re.DOTALL)
+                                cleaned_response = re.sub(r'\bcontent\b', '', cleaned_response, flags=re.IGNORECASE)
+                                return cleaned_response.strip()  # Return the cleaned string without metadata
+                            else:
+                                return "Content not found"
+                            
+                        
                         results, response_text = query_profiles(poste, embedding_function, llm)
+                        content_1 = extract_content(response_text)
                         st.session_state['cv_results'] = results
-                        st.session_state['cv_response_text'] = response_text
+                        st.session_state['cv_response_text'] = content_1
                         # Insérer les résultats dans la base de données
+                        
                         for doc, score in results:
                             pdf_path = os.path.join(DATA_PATH, doc.metadata.get('source'))
                             insert_analyze_cv(poste, score, pdf_path)                        
