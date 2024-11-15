@@ -24,18 +24,24 @@ def initialize_services2():
     PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
     index_name = "rapport"
-    pc = Pinecone(api_key="0f58e1ef-5679-498e-8b8f-e35fca0ab553")
-    pc.create_index(
-    name=index_name,
-    dimension=384,
-    metric="cosine",
-    spec=ServerlessSpec(
-        cloud="aws",
-        region="us-east-1"
-    ),
-    deletion_protection="disabled"
-    
-    )
+    pc = Pinecone(api_key=PINECONE_API_KEY)
+
+    try:
+        existing_indexes = pc.list_indexes()
+        if index_name not in existing_indexes:
+            pc.create_index(
+                name=index_name,
+                dimension=384,
+                metric="cosine",
+                spec=ServerlessSpec(
+                    cloud="aws",
+                    region="us-east-1"
+                )
+            )
+        
+    except Exception as e:
+        print(f"Error while checking or creating the index: {e}")
+
     embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
     docsearch = PineconeVectorStore(index_name=index_name, embedding=embeddings, pinecone_api_key=PINECONE_API_KEY)
     vectorstore = PineconeVectorStore(
@@ -54,9 +60,9 @@ def initialize_services2():
 
 def setup_rag_chain(docsearch, llm_groq):
     RAG_PROMPT = """\
-                    You are an assistant that give a general introduction about a Project. Given the content below, You will analyse the data that you have and give the user the most closest Project to his question and the Link to that Project.
+                    You are an assistant that give a general introduction about a Project. Given the content below, You will analyse the data that you have and give the user the most closest Project to his question and the full link to that Project without given a general introduction about the company.
 
-                        {content}
+                        {context}
                         Question:
                         {question}
                         If you cannot answer the question, please respond with 'I don't know'.

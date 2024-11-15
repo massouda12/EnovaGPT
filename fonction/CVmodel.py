@@ -23,18 +23,23 @@ def initialize_services():
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
     index_name = "cv"
     
-    pc = Pinecone(api_key="0f58e1ef-5679-498e-8b8f-e35fca0ab553")
-    pc.create_index(
-    name=index_name,
-    dimension=384,
-    metric="cosine",
-    spec=ServerlessSpec(
-        cloud="aws",
-        region="us-east-1"
-    ),
-    deletion_protection="disabled"
-    )
+    pc = Pinecone(api_key=PINECONE_API_KEY)
     
+    try:
+        existing_indexes = pc.list_indexes()
+        if index_name not in existing_indexes:
+            pc.create_index(
+                name=index_name,
+                dimension=384,
+                metric="cosine",
+                spec=ServerlessSpec(
+                    cloud="aws",
+                    region="us-east-1"
+                )
+            )
+        
+    except Exception as e:
+        print(f"Error while checking or creating the index: {e}")
 
     embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
     docsearch = PineconeVectorStore(index_name=index_name, embedding=embeddings, pinecone_api_key=PINECONE_API_KEY)
